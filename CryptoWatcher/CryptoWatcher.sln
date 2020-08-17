@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{C35C01D4-58B0-401A-A88B-69EBD2EA22E1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoWatcher", "CryptoWatcher\CryptoWatcher.csproj", "{F9F34B71-429E-41AA-A579-88B7BB139C7E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C35C01D4-58B0-401A-A88B-69EBD2EA22E1} = {C35C01D4-58B0-401A-A88B-69EBD2EA22E1}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
