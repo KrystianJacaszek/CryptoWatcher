@@ -1,10 +1,13 @@
+using CryptoWatcher.Interfaces;
+using CryptoWatcher.WebServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
+using System.Net.Http.Headers;
 
 namespace CryptoWatcher
 {
@@ -28,6 +31,11 @@ namespace CryptoWatcher
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            services.AddHttpClient<IWeatherForecastService, WeatherForecastService> (options => {
+                options.BaseAddress = Configuration.GetValue<Uri>("ApiBaseAddress");
+                options.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,7 +55,6 @@ namespace CryptoWatcher
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
