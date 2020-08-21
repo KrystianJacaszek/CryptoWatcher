@@ -16,15 +16,23 @@ export class WatchList extends Component {
 
     componentDidMount() {
         this.populateWatchList()
+        this.getWatchListFormLocalStorage()
     }
 
     handleChangeState = (e) => {
         this.setState({ selectedValue: e.target.value });
+        localStorage.setItem('watchListData', JSON.stringify(this.state.watchListData));
+    }
+
+    getWatchListFormLocalStorage = () => {
+        if (localStorage.getItem("watchListData")) {
+            this.setState({ watchListData: JSON.parse(localStorage.getItem("watchListData")) })
+        }
     }
 
     clearCryptoWatchList = () => {
         this.setState({ watchListData: [] })
-        console.log(this.state.watchListData);
+        localStorage.removeItem('watchListData');
     }
 
     addCryptoToWatchList = () => {
