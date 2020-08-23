@@ -23,6 +23,8 @@ export class WatchList extends Component {
         ]).then(() => {
             this.refreshWatchList()
         })
+
+        setInterval(() => { console.log("Refersh"); this.refreshWatchList(); }, 5000)
     }
 
     handleChangeState = (e) => {
@@ -40,8 +42,6 @@ export class WatchList extends Component {
     }
 
     refreshWatchList = () => {
-        this.setState({ watchListData: [] });
-
         this.getMultipleCurrencyInfo(this.state.watchtListSelected).then(result => {
             this.setState({ watchListData: result });
         })
