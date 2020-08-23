@@ -9,5 +9,7 @@ namespace API.Interfaces
     public interface ICurrencyInfoService
     {
         Task<IEnumerable<Currency>> GetCurrenciesAsync();
+        Task<CurrencyBasicInfo> GetSingleCurrencyBasicInfoAsync(string symbol);
+        Task<IEnumerable<CurrencyBasicInfo>> GetMultipleCurrnecyBasicInfoAsync(IList<string> symbolList);
     }
 }
