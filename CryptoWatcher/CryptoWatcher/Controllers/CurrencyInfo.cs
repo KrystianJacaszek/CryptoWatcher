@@ -2,6 +2,7 @@
 using CryptoWatcher.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -21,12 +22,24 @@ namespace CryptoWatcher.Controllers
             _logger = logger;
         }
 
-
-
-        [HttpGet]
+        [HttpGet("currnecyList")]
         public async Task<IEnumerable<Currency>> GetAsync()
         {
             return await _currencyInfoService.GetCurrencies();
+        }
+
+        [HttpGet("singleInfo")]
+        public async Task<ActionResult<CurrencyBasicInfo>> GetCurrencyInfoAsync(string symbol)
+        {
+            var x = await _currencyInfoService.GetSingleCurrencyInfo(symbol);
+            return Ok(JsonConvert.SerializeObject(x));
+        }
+
+        [HttpPost("multipleInfo")]
+        public async Task<ActionResult<IEnumerable<CurrencyBasicInfo>>> GetMultipleCurrencyInfoAsync(string[] symbolList)
+        {
+            var x = await _currencyInfoService.GetMultipleCurrencyInfo(symbolList);
+            return Ok(JsonConvert.SerializeObject(x));
         }
     }
 }
