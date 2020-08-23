@@ -14,8 +14,9 @@ export class WatchList extends Component {
         };
     }
 
+
     componentDidMount() {
-        this.populateWatchList()
+        this.getCurrencies()
         this.getWatchListFormLocalStorage()
     }
 
@@ -97,7 +98,7 @@ export class WatchList extends Component {
                                                 as="select"
                                                 onChange={this.handleChangeState}>
                                                 {this.state.watchList.map(currnecyEntity =>
-                                                    <option key={currnecyEntity}>{currnecyEntity}</option>)}
+                                                    <option key={currnecyEntity.symbol}>{currnecyEntity.fullName}</option>)}
 
                                             </Form.Control>
                                         </Col>
@@ -165,7 +166,9 @@ export class WatchList extends Component {
         }
     }
 
-    populateWatchList() {
-        this.setState({ watchList: ["BTC", "USD", "EUR", "ETH"] })
+    async getCurrencies() {
+        fetch('CurrencyInfo')
+            .then(res => res.json())
+            .then(json => this.setState({ watchList: json }) )
     }
 }
