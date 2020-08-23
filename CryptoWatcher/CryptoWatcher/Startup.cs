@@ -32,7 +32,7 @@ namespace CryptoWatcher
                 configuration.RootPath = "ClientApp/build";
             });
 
-            services.AddHttpClient<IWeatherForecastService, WeatherForecastService> (options => {
+            services.AddHttpClient<ICurrencyInfoService, CurrencyInfoService> (options => {
                 options.BaseAddress = Configuration.GetValue<Uri>("ApiBaseAddress");
                 options.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
