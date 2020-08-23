@@ -7,8 +7,9 @@ export class WatchList extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedValue: 'USD',
-            watchList: [],
+            selectedValue: 'BTC',
+            watchListForSelect: [],
+            watchtListSelected: [],
             watchListData: [],
             loading: true,
         };
@@ -16,34 +17,56 @@ export class WatchList extends Component {
 
 
     componentDidMount() {
-        this.getCurrencies()
-        this.getWatchListFormLocalStorage()
+        Promise.all([
+            this.getCurrencies(),
+            this.getWatchListFormLocalStorage()
+        ]).then(() => {
+            this.refreshWatchList()
+        })
     }
 
     handleChangeState = (e) => {
-        this.setState({ selectedValue: e.target.value });
-        localStorage.setItem('watchListData', JSON.stringify(this.state.watchListData));
+        let coin = this.state.watchListForSelect.find(function (post, index) {
+            if (post.fullName === e.target.value)
+                return true;
+        });
+        this.setState({ selectedValue: coin.name });
     }
 
     getWatchListFormLocalStorage = () => {
-        if (localStorage.getItem("watchListData")) {
-            this.setState({ watchListData: JSON.parse(localStorage.getItem("watchListData")) })
+        if (localStorage.getItem("watchListSelected")) {
+            this.setState({ watchtListSelected: JSON.parse(localStorage.getItem("watchListSelected")) })
         }
     }
 
+    refreshWatchList = () => {
+        this.setState({ watchListData: [] });
+
+        this.getMultipleCurrencyInfo(this.state.watchtListSelected).then(result => {
+            this.setState({ watchListData: result });
+        })
+    }
+
     clearCryptoWatchList = () => {
+        this.setState({ watchtListSelected: [] })
         this.setState({ watchListData: [] })
-        localStorage.removeItem('watchListData');
+        localStorage.removeItem('watchListSelected');
     }
 
     addCryptoToWatchList = () => {
         let selecetdValue = this.state.selectedValue;
-        console.log(this.getCurrnecyDataAsync(selecetdValue))
 
-        if (!(this.state.watchListData.some(x => x.name === selecetdValue))) {
+        if (!(this.state.watchtListSelected.some(x => x === selecetdValue))) {
             let tempList = this.state.watchListData;
-            tempList.push(this.getCurrnecyDataAsync(selecetdValue));
-            this.setState({ watchListData: tempList })
+            let tempListSelected = this.state.watchtListSelected;
+
+            this.getSingleCurrencyInfo(selecetdValue).then(result => {
+                tempListSelected.push(selecetdValue);
+                tempList.push(result);
+                this.setState({ watchtListSelected: tempListSelected });
+                this.setState({ watchListData: tempList });
+                localStorage.setItem('watchListSelected', JSON.stringify(tempListSelected));
+            })
         }
     }
 
@@ -53,22 +76,18 @@ export class WatchList extends Component {
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Market Cap</th>
                         <th>Price</th>
                         <th>Volume (24h)</th>
-                        <th>Circulating Supply</th>
                         <th>Change (24h)</th>
                     </tr>
                 </thead>
                 <tbody>
                     {watchList.map(cryptoCurrency =>
-                        <tr key={cryptoCurrency.name}>
-                            <td>{cryptoCurrency.name}</td>
-                            <td>{cryptoCurrency.marketCap}</td>
-                            <td>{cryptoCurrency.price}</td>
-                            <td>{cryptoCurrency.volume}</td>
-                            <td>{cryptoCurrency.circulatingSupply}</td>
-                            <td>{cryptoCurrency.change}</td>
+                        <tr key={cryptoCurrency.Name}>
+                            <td>{cryptoCurrency.Name}</td>
+                            <td>{cryptoCurrency.Info.Price}</td>
+                            <td>{cryptoCurrency.Info.Volume24hour}</td>
+                            <td>{cryptoCurrency.Info.Changepct24hour} %</td>
                         </tr>
                     )}
                 </tbody>
@@ -97,8 +116,8 @@ export class WatchList extends Component {
                                             <Form.Control
                                                 as="select"
                                                 onChange={this.handleChangeState}>
-                                                {this.state.watchList.map(currnecyEntity =>
-                                                    <option key={currnecyEntity.symbol}>{currnecyEntity.fullName}</option>)}
+                                                {this.state.watchListForSelect.map(currnecyEntity =>
+                                                    <option key={currnecyEntity.name}>{currnecyEntity.fullName}</option>)}
 
                                             </Form.Control>
                                         </Col>
@@ -117,58 +136,24 @@ export class WatchList extends Component {
         );
     }
 
-    getCurrnecyDataAsync(currnecy: string) {
-        console.log("Return item:" + currnecy)
-        switch (currnecy) {
-            default:
-                return 0;
-                break;
-            case "USD":
-                return {
-                    name: "USD",
-                    marketCap: "marketCap",
-                    price: "price",
-                    volume: "volume",
-                    circulatingSupply: "circulatingSupply",
-                    change: "change"
-                }
-                break;
-            case "BTC":
-                return {
-                    name: "BTC",
-                    marketCap: "marketCap",
-                    price: "price",
-                    volume: "volume",
-                    circulatingSupply: "circulatingSupply",
-                    change: "change"
-                }
-                break;
-            case "EUR":
-                return {
-                    name: "EUR",
-                    marketCap: "marketCap",
-                    price: "price",
-                    volume: "volume",
-                    circulatingSupply: "circulatingSupply",
-                    change: "change"
-                }
-                break;
-            case "ETH":
-                return {
-                    name: "ETH",
-                    marketCap: "marketCap",
-                    price: "price",
-                    volume: "volume",
-                    circulatingSupply: "circulatingSupply",
-                    change: "change"
-                }
-                break;
-        }
+    async getCurrencies() {
+        fetch('CurrencyInfo/currnecyList')
+            .then(res => res.json())
+            .then(json => this.setState({ watchListForSelect: json }))
     }
 
-    async getCurrencies() {
-        fetch('CurrencyInfo')
-            .then(res => res.json())
-            .then(json => this.setState({ watchList: json }) )
+    async getSingleCurrencyInfo(symbol) {
+        return fetch(`CurrencyInfo/singleInfo?symbol=${symbol}`)
+            .then(res => res.json());
+    }
+
+    async getMultipleCurrencyInfo(symbolList) {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(symbolList)
+        }
+        return fetch('CurrencyInfo/multipleInfo', requestOptions)
+            .then(res => res.json());
     }
 }
